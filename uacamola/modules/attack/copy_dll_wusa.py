@@ -1,5 +1,5 @@
 # This file is part of uac-a-mola
-# Copyright (C) Pablo Gonzalez (pablo@11paths.com)
+# Pablo Gonzalez (pablo@11paths.com)
 #
 # DESCRIPTION
 # This module is used for copy a DLL in privilege path (wusa method win7/8/8.1)
