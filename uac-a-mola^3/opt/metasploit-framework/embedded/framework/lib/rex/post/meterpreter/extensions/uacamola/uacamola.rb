@@ -24,9 +24,19 @@ module Uacamola
 ###
 
 class Uacamola < Extension
+  EXTENSION_ID_UACAMOLA = 20_000
   PY_CODE_TYPE_STRING = 0
   PY_CODE_TYPE_PY     = 1
   PY_CODE_TYPE_PYC    = 2
+
+  # Newer metasploit versions expect extension classes to expose an id.
+  def self.extension_id
+    EXTENSION_ID_UACAMOLA
+  end
+
+  def self.extension_name
+    'uacamola'
+  end
 
   #
   # Typical extension initialization routine.
