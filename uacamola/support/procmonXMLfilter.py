@@ -9,12 +9,13 @@
 def remove(events, to_remove):
     for k in to_remove.keys():
         for e in to_remove[k]:
-            events[k].remove(e)
+            if e in events.get(k, []):
+                events[k].remove(e)
     return events
 
 
 def by_operation(events, operation):
-    for k in events.keys():
+    for k in list(events.keys()):
         if operation.lower() != k.lower():
             del events[k]
     return events

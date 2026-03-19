@@ -5,7 +5,7 @@
 # This file is an interface that simplify some of the methods implemented
 # by _winreg module.
 
-import _winreg as winreg
+import winreg
 
 class Registry(object):
 
@@ -24,8 +24,8 @@ class Registry(object):
         try:
             return winreg.CreateKey(key, subkey)
 
-        except WindowsError as error:
-            print "Error al crear clave"
+        except OSError:
+            print("Error al crear clave")
             self.no_restore = True
 
     def restore(self, key, value=''):
@@ -43,13 +43,13 @@ class Registry(object):
                     if i == 0:
                         try:
                             winreg.DeleteKey(k, "\\".join(exist_sk + new_sk))
-                        except WindowsError as error:
+                        except OSError:
                             pass
                     else:
                         try:
                             winreg.DeleteKey(k, "\\".join(
                                 exist_sk + new_sk[:-i]))
-                        except WindowsError as error:
+                        except OSError:
                             pass
 
                 self.last_created['new_sk'] = None
@@ -61,10 +61,10 @@ class Registry(object):
         the path that doesn't exist
         """
         s = subkey.split('\\')
-        for i in xrange(1, len(s) + 1):
+        for i in range(1, len(s) + 1):
             try:
                 winreg.OpenKey(key, "\\".join(s[:i]))
-            except WindowsError:
+            except OSError:
                 self.last_created['key'] = key
                 self.last_created['new_sk'] = s[i - 1:]
                 self.last_created['existing_sk'] = s[:i - 1]
@@ -75,16 +75,16 @@ class Registry(object):
         """
         try:
             return winreg.SetValue(key, subkey, winreg.REG_SZ, value)
-        except WindowsError as error:
-            print "Error al crear un valor"
+        except OSError:
+            print("Error al crear un valor")
             self.no_restore = True
 
     def del_value(self, key, value=''):
         if self.no_restore is False:
             try:
                 return winreg.DeleteValue(key, value)
-            except WindowsError as error:
-                print "Error al eliminar el valor"
+            except OSError:
+                print("Error al eliminar el valor")
 
     def create_value(self, key, value_name, value):
         """ Creates a value THAT DOESN'T EXIST, we need
@@ -93,8 +93,8 @@ class Registry(object):
         self.no_restore = False
         try:
             return winreg.SetValueEx(key, value_name, 0, winreg.REG_SZ, value)
-        except WindowsError as error:
-            print "Error al crear clave"
+        except OSError:
+            print("Error al crear clave")
             self.no_restore = True
 
     def delete_key(self, key, subkey):
@@ -102,8 +102,8 @@ class Registry(object):
         """
         try:
             return winreg.DeleteKey(key, subkey)
-        except WindowsError as error:
-            print "Error al eliminar la clave"
+        except OSError:
+            print("Error al eliminar la clave")
 
     def open_key(self, key, subkey):
         """ Opens a key

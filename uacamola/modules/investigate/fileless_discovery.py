@@ -5,12 +5,18 @@
 # This file parses an xml produced by Procmon application and returns
 # a list of binaries that are vulnerable to fileless uac bypass
 
+try:
+    from ...module import Module
+    from ...support.procmonXMLparser import ProcmonXmlParser
+    from ...support.winreg import Registry
+    from ...support import procmonXMLfilter as Filter
+except ImportError:
+    from module import Module
+    from support.procmonXMLparser import ProcmonXmlParser
+    from support.winreg import Registry
+    import support.procmonXMLfilter as Filter
 
-from module import Module
-from support.procmonXMLparser import ProcmonXmlParser
-from support.winreg import Registry
-import support.procmonXMLfilter as Filter
-from _winreg import HKEY_CURRENT_USER as HKCU
+from winreg import HKEY_CURRENT_USER as HKCU
 import subprocess
 import psutil
 import copy
@@ -18,10 +24,13 @@ import time
 
 
 class CustomModule(Module):
-    _FORBIDDEN_PATHS = ('HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\SessionInfo\1\Desktop\NameSpace\DelegateFolders',
-                       'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\SessionInfo\1\MyComputer\RemovableDrives',
-                       'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\SessionInfo\1\KnownFolders',
-                       'HKCU\Control Panel\Desktop\MuiCached\MachineLanguageConfiguration')
+    _FORBIDDEN_PATHS = (
+        r"HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\SessionInfo\1\Desktop\NameSpace\DelegateFolders",
+        r"HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\SessionInfo\1\MyComputer\RemovableDrives",
+        r"HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\SessionInfo\1\KnownFolders",
+        r"HKCU\Control Panel\Desktop\MuiCached\MachineLanguageConfiguration",
+    )
+
     def __init__(self):
         information = {"Name": "Fileless discovery",
                        "Description": "This module search in a list of binaries for fileless UAC bypasses",
@@ -35,22 +44,23 @@ class CustomModule(Module):
         # Constructor of the parent class
         super(CustomModule, self).__init__(information, options)
 
-        # Class atributes, initialization in the run_module method
+        # Class attributes, initialization in the run_module method
         # after the user has set the values
         self._results = {}
         self.p = None
         self.events = None
         self.events_nf = None
         self.reg = None
-	self._visited = []
+        self._visited = []
 
     # This module must be always implemented, it is called by the run option
     def run_module(self):
         self.init_import_modules()
-	try:
+
+        try:
             self.print_info("[*] Searching for openkey not found values\n")
             for b in self.binaries():
-	        self._visited = []
+                self._visited = []
                 self._results[b] = []
                 self.print_ok("[*] Processing %s\n" % b)
                 events = copy.deepcopy(self.p)
@@ -58,7 +68,7 @@ class CustomModule(Module):
                 events = Filter.by_operation(events, "RegOpenKey")
                 for e in events['RegOpenKey']:
                     path = e.find('Path').text
-		    if path in self._visited or path in self._FORBIDDEN_PATHS:
+                    if path in self._visited or path in self._FORBIDDEN_PATHS:
                         continue
                     self._visited.append(path)
                     self.print_info("[*] Inserting into %s" % path)
@@ -76,14 +86,12 @@ class CustomModule(Module):
                     else:
                         self.kill(b.split('.')[0], previous_pid, new_pid)
                     self.reg.restore(k)
-        except:
+        except Exception:
             self.print_ko("Exiting the module\n")
             self.results()
-	    return
+            return
 
-        #########################################################
-
-	try:
+        try:
             self.print_info("[*] Searching for queryvalue not found values\n")
             for b in self.binaries():
                 self._visited = []
@@ -93,7 +101,7 @@ class CustomModule(Module):
                 events = Filter.by_operation(events, "RegQueryValue")
                 for e in events['RegQueryValue']:
                     path = e.find('Path').text
-		    if path in self._visited or path in self._FORBIDDEN_PATHS:
+                    if path in self._visited or path in self._FORBIDDEN_PATHS:
                         continue
                     self._visited.append(path)
                     self.print_info("[*] Inserting into %s" % str(path))
@@ -108,15 +116,15 @@ class CustomModule(Module):
                     new_pid = psutil.pids()
 
                     if self.is_cmd_open(previous_pid):
-                        if str(path) not in self.results[b]:
+                        if str(path) not in self._results[b]:
                             self._results[b].append(str(path))
                         self.kill('cmd', previous_pid, new_pid)
                     else:
                         self.kill(b.split('.')[0], previous_pid, new_pid)
 
                     self.reg.restore(k, path.split("\\")[-1])
-        except:
-	    self.print_ko("Exiting the module\n")
+        except Exception:
+            self.print_ko("Exiting the module\n")
             self.results()
             return
 
@@ -128,23 +136,23 @@ class CustomModule(Module):
         self.reg = Registry()
 
     def results(self):
-        print "\n"
+        print("\n")
         self.print_info("RESULTS\n")
-        print "-------"
+        print("-------")
 
         for key in self._results.keys():
             self.print_info(key + '\n')
             for v in self._results[key]:
-                print "|_" + v
-        print ""
+                print("|_" + v)
+        print("")
 
     def kill(self, proc, last_pids=None, new_pids=None):
         new_pids = self.last_process_created(last_pids, new_pids)
         try:
             for p in new_pids:
-                subprocess.check_call(["taskkill","/t", "/f", "/pid", str(p)])
+                subprocess.check_call(["taskkill", "/t", "/f", "/pid", str(p)])
         except subprocess.CalledProcessError:
-            print "[!!] The process %s can't be killed" % proc
+            print("[!!] The process %s can't be killed" % proc)
             return
 
     def last_process_created(self, prev_pids, new_pids):
@@ -159,8 +167,8 @@ class CustomModule(Module):
             subprocess.Popen([proc])
         except subprocess.CalledProcessError as error:
             raise error
-        except WindowsError:
-            print "[!!] The application can't be executed in win32 mode"
+        except OSError:
+            print("[!!] The application can't be executed in win32 mode")
             return
 
     def is_cmd_open(self, prev_pids):
@@ -170,7 +178,7 @@ class CustomModule(Module):
                 created_pids.append(pid)
         try:
             return 'cmd.exe' in [psutil.Process(p).name() for p in created_pids]
-        except:
+        except Exception:
             pass
 
     def binaries(self):

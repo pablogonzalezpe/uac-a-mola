@@ -5,11 +5,16 @@
 # This file is aimed for simplify the search of some Registry values
 # that resides in a Procmon XML generated file.
 
-from module import Module
-from support.procmonXMLparser import ProcmonXmlParser
+try:
+    from ...module import Module
+    from ...support.procmonXMLparser import ProcmonXmlParser
+    from ...support.procmonXMLfilter import *
+except ImportError:
+    from module import Module
+    from support.procmonXMLparser import ProcmonXmlParser
+    from support.procmonXMLfilter import *
 from termcolor import colored
 import os
-from support.procmonXMLfilter import *
 import copy
 
 
@@ -42,7 +47,7 @@ class CustomModule(Module):
     # This method must be always implemented, it is called by the run option
     def run_module(self):
         # To access user provided attributes, use self.args dictionary
-        print self.get_banner()
+        print(self.get_banner())
         xmlParser = ProcmonXmlParser(self.args["xml_path"])
         self.events = xmlParser.parse()
         # Releasing memory
@@ -50,10 +55,10 @@ class CustomModule(Module):
 
         while True:
             if self.filters["Process_Name"] is None:
-                user_input = raw_input(
+                user_input = input(
                     'searchConsole[' + colored("all_procs", 'yellow', attrs=['bold']) + ']> ').split()
             else:
-                user_input = raw_input(
+                user_input = input(
                     'searchConsole[' + colored(self.filters["Process_Name"], 'yellow', attrs=['bold']) + ']> ').split()
 
             if user_input == []:
@@ -73,7 +78,7 @@ class CustomModule(Module):
                                      "Path", "Result", "Detail"]:
                     self.display[user_input[1]] = user_input[2]
                 else:
-                    print colored("[!] WRONG FILTER: Please respect uppercase letters", 'red', attrs=['bold'])
+                    print(colored("[!] WRONG FILTER: Please respect uppercase letters", 'red', attrs=['bold']))
                     continue
 
             elif len(user_input) > 3 and user_input[0] == 'set' and user_input[1] == 'Pattern':
@@ -83,7 +88,7 @@ class CustomModule(Module):
                                      "Path", "Result", "Pattern"]:
                     self.filters[user_input[1]] = user_input[2]
                 else:
-                    print colored("[!] WRONG FILTER: Please respect uppercase letters", 'red', attrs=['bold'])
+                    print(colored("[!] WRONG FILTER: Please respect uppercase letters", 'red', attrs=['bold']))
                     continue
 
     def help(self):
@@ -91,25 +96,25 @@ class CustomModule(Module):
 
     def show(self):
 
-        print colored("\n Filters", 'yellow', attrs=['bold'])
-        print " -------"
+        print(colored("\n Filters", 'yellow', attrs=['bold']))
+        print(" -------")
 
-        for key, value in self.filters.iteritems():
+        for key, value in self.filters.items():
             if str(self.filters[key]).lower() == "none":
-                print " |_" + key + " = " + str(value)
+                print(" |_" + key + " = " + str(value))
             else:
-                print " |_" + colored(key + " = " + str(value), 'green', attrs=['bold'])
+                print(" |_" + colored(key + " = " + str(value), 'green', attrs=['bold']))
 
-        print colored("\n Display", 'yellow', attrs=['bold'])
-        print " -------"
+        print(colored("\n Display", 'yellow', attrs=['bold']))
+        print(" -------")
 
-        for key, value in self.display.iteritems():
+        for key, value in self.display.items():
             if str(self.display[key]).lower() == "false":
-                print " |_" + key + " = " + str(value)
+                print(" |_" + key + " = " + str(value))
             else:
-                print " |_" + colored(key + " = " + str(value), 'green', attrs=['bold'])
+                print(" |_" + colored(key + " = " + str(value), 'green', attrs=['bold']))
 
-        print ""
+        print("")
 
     def run(self):
         events = copy.deepcopy(self.events)
@@ -127,13 +132,13 @@ class CustomModule(Module):
 
     def pretty_print(self, events):
         for k in events.keys():
-            print colored("\n" + k, 'green', attrs=['bold'])
-            print colored("-" * len(k), 'green', attrs=['bold'])
+            print(colored("\n" + k, 'green', attrs=['bold']))
+            print(colored("-" * len(k), 'green', attrs=['bold']))
             for e in events[k]:
-                for k2, value in self.display.iteritems():
+                for k2, value in self.display.items():
                     if str(value).lower() == "true":
-                        print e.find(k2).text
-                print ""
+                        print(e.find(k2).text)
+                print("")
 
     def get_banner(self):
         banner = """  ____                      _      ____                      _

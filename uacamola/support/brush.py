@@ -2,7 +2,10 @@
 Author: Santiago Hernandez Ramos
 """
 from __future__ import print_function
-import color_console as cons
+try:
+    from . import color_console as cons
+except ImportError:
+    import color_console as cons
 
 
 class Brush():

@@ -1,11 +1,17 @@
 #--encoding: utf-8--
 
-from autocomplete import Completer
-from session import Session
+try:
+    from .autocomplete import Completer
+    from .session import Session
+    from . import banners
+    from .support.brush import Brush
+except ImportError:
+    from autocomplete import Completer
+    from session import Session
+    import banners
+    from support.brush import Brush
 import readline
 import os
-import banners
-from support.brush import Brush
 from termcolor import colored
 
 
@@ -13,28 +19,28 @@ END_COMMANDS = ['quit', 'exit', 'q']
 CLEAR_COMMANDS = ['clear', 'cls']
 
 def console():
-    # Configuring the commpleter
+    # Configuring the completer
     comp = Completer(['load', 'set', 'show', 'run', 'back', 'quit', 'help'])
     readline.set_completer_delims(' \t\n;')
     readline.parse_and_bind("tab: complete")
-    readline.set_completer(comp.complete) 
+    readline.set_completer(comp.complete)
     brush = Brush()
 
-    print (banners.get_banner())
+    print(banners.get_banner())
     brush.color(' [+]', 'YELLOW')
-    print ' Starting the console...'
+    print(' Starting the console...')
     brush.color(' [*]', 'GREEN')
-    print ' Console ready!\n\n'
+    print(' Console ready!\n\n')
 
     session = None
 
     while True:
         try:
             if session is None:
-                user_input = raw_input(
+                user_input = input(
                     colored('uac-a-mola> ', 'yellow', attrs=['bold'])).split()
             else:
-                user_input = raw_input(
+                user_input = input(
                     "uac-a-mola["
                     + colored(session.header(), 'yellow', attrs=['bold'])
                     + "]> ").split()

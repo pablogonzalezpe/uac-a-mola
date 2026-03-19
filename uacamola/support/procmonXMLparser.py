@@ -8,8 +8,6 @@
 from xml.etree.ElementTree import iterparse
 import os
 from termcolor import colored
-from contextlib import closing
-import shelve
 
 
 class ProcmonXmlParser():
@@ -40,14 +38,14 @@ class ProcmonXmlParser():
 
         file_size = int(os.path.getsize(self.path))
 
-        print "\n[*] PARSING FILE: " \
-            + colored(self.path.split("\\")[-1], 'yellow', attrs=['bold'])
+        print("\n[*] PARSING FILE: " +
+              colored(self.path.split("\\")[-1], 'yellow', attrs=['bold']))
 
-        print "[*] FILE SIZE: " + \
-            colored("%d MB" % (file_size / 1024 / 1024),
-                    'yellow', attrs=['bold'])
+        print("[*] FILE SIZE: " +
+              colored("%d MB" % (file_size / 1024 / 1024),
+                      'yellow', attrs=['bold']))
 
-        print "[*] BUILDING THE STRUCTURES WILL TAKE SOME TIME"
+        print("[*] BUILDING THE STRUCTURES WILL TAKE SOME TIME")
 
         try:
             for event, elem in tree:
@@ -61,11 +59,11 @@ class ProcmonXmlParser():
                     else:
                         elem.clear()
 
-            print colored("[*] PARSING FINISHED CORRECTLY\n",
-                          'green', attrs=['bold'])
+            print(colored("[*] PARSING FINISHED CORRECTLY\n",
+                          'green', attrs=['bold']))
 
             return self.events
 
         except Exception as error:
-            print colored("[*] PARSING FAILED", 'red', attrs=['bold'])
-            print colored(" => " + str(error), 'red', attrs=['bold'])
+            print(colored("[*] PARSING FAILED", 'red', attrs=['bold']))
+            print(colored(" => " + str(error), 'red', attrs=['bold']))

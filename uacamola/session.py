@@ -1,6 +1,8 @@
 import importlib
-from termcolor import colored
-from support.brush import Brush
+try:
+    from .support.brush import Brush
+except ImportError:
+    from support.brush import Brush
 import sys
 
 
@@ -21,52 +23,52 @@ class Session(object):
 
     def information(self):
         info = self._module.get_information()
-        print ""
-        for key, value in info.iteritems():
+        print("")
+        for key, value in info.items():
             self.brush.color(" %s\n" % key, 'YELLOW')
-            print ' ' + '-' * len(key)
-            print " |_%s\n" % value
+            print(' ' + '-' * len(key))
+            print(" |_%s\n" % value)
 
     def options(self):
         opts = self._module.get_options_dict()
         self.brush.color("\n Options (Field = Value)\n", 'YELLOW')
-        print " -----------------------"
+        print(" -----------------------")
         flag = 0
-        for key, value in opts.iteritems():
+        for key, value in opts.items():
             flag += 1
             # Parameter is mandataroy
             if value[2] is True:
                 if str(value[0]) == "None":
                     if flag > 1:
-                        print " |"
+                        print(" |")
                     sys.stdout.write(" |_[")
                     self.brush.color("REQUIRED", 'RED')
                     sys.stdout.write("] %s" % key)
                     sys.stdout.write(" = %s (%s)\n" % (value[0], value[1]))
                 else:
                     if flag > 1:
-                        print " |"
+                        print(" |")
                     sys.stdout.write(" |_%s" % key)
                     sys.stdout.write(" = ")
                     self.brush.color("%s" % value[0], 'GREEN')
-                    sys.stdout.write(" (% s)\n" % (value[1]))
+                    sys.stdout.write(" (%s)\n" % (value[1]))
 
             # Parameter is optional
             elif value[2] is False:
                 if str(value[0]) == "None":
                     if flag > 1:
-                        print " |"
-                    print " |_[OPTIONAL] %s" % key \
-                        + " = %s (%s)" % (value[0], value[1])
+                        print(" |")
+                    print(" |_[OPTIONAL] %s" % key
+                          + " = %s (%s)" % (value[0], value[1]))
                 else:
                     if flag > 1:
-                        print " |"
+                        print(" |")
                     sys.stdout.write(" |_%s" % key)
                     sys.stdout.write(" = ")
                     self.brush.color("%s" % value[0], 'GREEN')
-                    sys.stdout.write(" (% s)\n" % (value[1]))
+                    sys.stdout.write(" (%s)\n" % (value[1]))
 
-        print "\n"
+        print("\n")
 
     def run(self):
         if not(self._module.check_arguments()):
@@ -94,15 +96,24 @@ class Session(object):
         self._module.set_value(name, value)
 
     def instantiate_module(self, path):
+        candidates = [path]
+        if not path.startswith("uacamola."):
+            candidates.append("uacamola." + path)
         try:
-            print '[+] Loading module...'
-            m = importlib.import_module(path)
-            self.brush.color('[+] Module loaded!\n', 'GREEN')
-            return m.CustomModule()
+            print('[+] Loading module...')
+            last_error = None
+            for candidate in candidates:
+                try:
+                    m = importlib.import_module(candidate)
+                    self.brush.color('[+] Module loaded!\n', 'GREEN')
+                    return m.CustomModule()
+                except ImportError as error:
+                    last_error = error
+            raise last_error
         except ImportError as error:
             self.brush.color('[!] Error importing the module:\n', 'RED')
             self.brush.color("  => " + str(error), 'RED')
-            print ""
+            print("")
             return None
 
     def correct_module(self):
@@ -111,9 +122,9 @@ class Session(object):
         return True
 
     def import_path(self, path):
-        path = path.split('\\')
+        path = path.replace("/", "\\").split('\\')
         path = path[path.index('modules'):]
         return ".".join(path)[:-3]
 
     def get_options(self):
-        return ['set ' + key for key, value in self._module.get_options_dict().iteritems()]
+        return ['set ' + key for key, value in self._module.get_options_dict().items()]

@@ -1,14 +1,17 @@
 from multiprocessing.connection import Listener
-from multiprocessing import Process, RLock
-from winreg import *
-import admin
+from multiprocessing import Process
+from winreg import HKEY_CURRENT_USER as HKCU
+from winreg import HKEY_LOCAL_MACHINE as HKLM
+try:
+    from .winreg import Registry
+    from . import admin
+    from .brush import Brush
+except ImportError:
+    from support.winreg import Registry
+    import admin
+    from support.brush import Brush
 import os
-from _winreg import HKEY_CURRENT_USER as HKCU
-from _winreg import HKEY_LOCAL_MACHINE as HKLM
-from support.brush import Brush
 import ctypes
-import sys
-import time
 
 
 class CustomListener:
@@ -16,12 +19,12 @@ class CustomListener:
     DEBUG_KEY = "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options\\"
 
     def __init__(self, password, port):
-        self.password = password
+        self.password = password.encode() if isinstance(password, str) else password
         self.port = port
-        self.agents_path = self.agents_path()
+        self.agents_path = self._agents_path()
         self.brush = Brush()
 
-    def agents_path(self):
+    def _agents_path(self):
         dirpath = os.path.dirname(os.path.realpath(__file__))
         return str(dirpath) + "\\agents\\"
 
@@ -31,11 +34,11 @@ class CustomListener:
         binaries
         """
         if binlist is None or binlist == []:
-            print "Empty list of binaries"
+            print("Empty list of binaries")
             return
         # This module must be executed as administrator
         if not admin.isUserAdmin():
-            print "ERROR: Please run uacamola as ADMINISTRATOR"
+            print("ERROR: Please run uacamola as ADMINISTRATOR")
             return
         registry = Registry()
         self.add_debugger(registry, binlist)
@@ -43,7 +46,7 @@ class CustomListener:
         create_listeners = Process(target=self._create_listeners, args=())
         create_listeners.start()
         # Waiting for exiting
-        raw_input("\n--- Press ENTER for quit mitigate mode ---\n\n")
+        input("\n--- Press ENTER for quit mitigate mode ---\n\n")
         self.del_debugger(registry, binlist)
         return
 
@@ -70,7 +73,7 @@ class CustomListener:
             if k:
                 self.brush.color("[!!] POSSIBLE UAC BYPASS IN YOUR SYSTEM\n", 'RED')
                 registry.delete_key(HKCU, msg[1])
-                ctypes.windll.user32.MessageBoxA(
+                ctypes.windll.user32.MessageBoxW(
                     None, "UAC BYPASS DETECTADO Y MITIGADO. EJECUCION SEGURA DEL BINARIO", "PELIGRO!", 0)
             os.system(msg[0])
             # Setting the debugger key before breaking connection
@@ -79,7 +82,7 @@ class CustomListener:
             registry.create_value(k,
                                   "debugger",
                                   payload)
-            print "[+] Closing the listener"
+            print("[+] Closing the listener")
             conn.close()
             listener.close()
 

@@ -1,8 +1,11 @@
 #--encoding: utf-8--
 
-from module import Module
-from support.listener import CustomListener
-from multiprocessing.connection import Client
+try:
+    from ...module import Module
+    from ...support.listener import CustomListener
+except ImportError:
+    from module import Module
+    from support.listener import CustomListener
 
 
 class CustomModule(Module):

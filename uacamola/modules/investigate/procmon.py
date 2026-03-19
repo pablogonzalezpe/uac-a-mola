@@ -7,7 +7,10 @@
 # this information into XML format.
 
 
-from module import Module
+try:
+    from ...module import Module
+except ImportError:
+    from module import Module
 import subprocess
 from threading import Lock, Thread
 import time
@@ -39,7 +42,7 @@ class CustomModule(Module):
 
         Thread(target=self.monitoring).start()
 
-        print "\n[*] STARTING PROGRAMS EXECUTION IN 5 SECONDS...\n"
+        print("\n[*] STARTING PROGRAMS EXECUTION IN 5 SECONDS...\n")
         time.sleep(5)
 
         for b in self.binaries():
@@ -48,21 +51,22 @@ class CustomModule(Module):
             self.execute(b)
             time.sleep(int(self.args["sleep_time"]))
             new_pid = psutil.pids()
-            print "  [-] Killing the process"
+            print("  [-] Killing the process")
             self.kill(b.split('.')[0], previous_pid, new_pid)
 
-        print "\n[*] PLEASE CLOSE PROCMON PROCESS\n"
+        print("\n[*] PLEASE CLOSE PROCMON PROCESS\n")
         self.parsing_results()
-        print "\n[*] RESULTS PARSED TO XML\n"
+        print("\n[*] RESULTS PARSED TO XML\n")
 
     def monitoring(self):
+        self.lock.acquire()
         try:
-            self.lock.acquire()
             subprocess.check_call(
                 [self.args["procmon_path"], "/BackingFile", "tmp"])
-            self.lock.release()
         except subprocess.CalledProcessError as error:
             raise error
+        finally:
+            self.lock.release()
 
     def binaries(self):
         with open(self.args["binlist_path"], 'r') as binfile:
@@ -73,8 +77,8 @@ class CustomModule(Module):
             subprocess.Popen([proc])
         except subprocess.CalledProcessError as error:
             raise error
-        except WindowsError:
-            print "[!!] The application can't be executed in win32 mode"
+        except OSError:
+            print("[!!] The application can't be executed in win32 mode")
             return
 
     def kill(self, proc, last_pids=None, new_pids=None):
@@ -83,8 +87,8 @@ class CustomModule(Module):
             new_pids = self.last_process_created(last_pids, new_pids)
             for p in new_pids:
                 subprocess.check_call(["taskkill", "/t", "/f", "/pid", str(p)])
-        except:
-            print "[!!] The process %s can't be killed" % proc
+        except Exception:
+            print("[!!] The process %s can't be killed" % proc)
             return
 
     def parsing_results(self):
@@ -94,6 +98,8 @@ class CustomModule(Module):
                 [self.args["procmon_path"], "/OpenLog", "tmp.PML", "/SaveAs", self.args["output"]])
         except subprocess.CalledProcessError as error:
             raise error
+        finally:
+            self.lock.release()
 
     def last_process_created(self, prev_pids, new_pids):
         pids = []

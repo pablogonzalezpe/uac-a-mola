@@ -7,7 +7,10 @@
 # This is the parent class, all the Custom modules must inherit of it
 
 
-from support.brush import Brush
+try:
+    from .support.brush import Brush
+except ImportError:
+    from support.brush import Brush
 import os
 
 
@@ -44,7 +47,7 @@ class Module(object):
             'ERROR: run_module method must be implemented in the child class')
 
     def check_arguments(self):
-        for key, value in self.options.iteritems():
+        for key, value in self.options.items():
             if value[2] is True and str(value[0]) == "None":
                 return False
         return True

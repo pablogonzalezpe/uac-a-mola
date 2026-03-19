@@ -5,7 +5,10 @@
 # This module search for binaries with 'AutoElevate' Attribute
 
 
-from module import Module
+try:
+    from ...module import Module
+except ImportError:
+    from module import Module
 from os import listdir
 from os.path import isfile, join
 
@@ -17,8 +20,8 @@ class CustomModule(Module):
                        "Author": "Pablo Gonzalez"}
 
         # -----------name-----default_value--description
-        options = {"binlist": ["C:\Users\IEUser\Desktop\uacamola\proof.txt", "Path to a list of binaries for testing", True],
-                   "path":  ["c:\windows\sysnative\\", "Binary's Path", True],
+        options = {"binlist": [r"C:\Users\IEUser\Desktop\uacamola\proof.txt", "Path to a list of binaries for testing", True],
+                   "path":  [r"c:\windows\sysnative\\", "Binary's Path", True],
                    "mode": ["0", "Mode path (0) or binlist (1)", True],
                    "output": ["binlist.txt", "Output file for binaries with Autoelevate equal to True", False]}
 
@@ -30,10 +33,10 @@ class CustomModule(Module):
         if self.args["mode"] == "0":
             self.print_info("[*] Searching binaries in: %s\n" %
                             self.args["path"])
-            list = self.file_in_directory(self.args["path"])
+            binaries = self.file_in_directory(self.args["path"])
             f = open(self.args["output"], "w")
-            for i in list:
-                print '[*] Parsing binary: ' + i
+            for i in binaries:
+                print('[*] Parsing binary: ' + i)
                 if self.find_auto_elevate(i):
                     f.write(i.split("\\")[-1] + "\n")
             f.close()
@@ -58,17 +61,17 @@ class CustomModule(Module):
 
     def find_auto_elevate(self, bin):
         with open(bin, 'rb') as binfile:
-            binaryString = binfile.read()
-            found = ">true</autoElevate>"
-            if binaryString.find(found, 0) != -1:
+            binary_string = binfile.read()
+            found = b">true</autoElevate>"
+            if binary_string.find(found, 0) != -1:
                 self.print_ok("binary: " + bin + " has AutoElevate a true\n")
                 return True
             return False
 
     def file_in_directory(self, path):
-        list = []
+        binaries = []
         for f in listdir(path):
             if isfile(join(path, f)):
                 if f.find(".exe", 0) != -1:
-                    list.append(join(path, f))
-        return list
+                    binaries.append(join(path, f))
+        return binaries

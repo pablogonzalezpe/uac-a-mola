@@ -6,9 +6,14 @@
 # a list of binaries that are vulnerable to dll hijacking uac bypass
 
 
-from module import Module
-from support.procmonXMLparser import ProcmonXmlParser
-import support.procmonXMLfilter as Filter
+try:
+    from ...module import Module
+    from ...support.procmonXMLparser import ProcmonXmlParser
+    from ...support import procmonXMLfilter as Filter
+except ImportError:
+    from module import Module
+    from support.procmonXMLparser import ProcmonXmlParser
+    import support.procmonXMLfilter as Filter
 import time
 import subprocess
 import psutil
@@ -52,7 +57,7 @@ class CustomModule(Module):
                 path = e.find("Path").text
                 if path not in self._visited and b + ".Local" in path:
                     self._visited.append(path)
-                    print "[*] Suspicious path found: " + path
+                    print("[*] Suspicious path found: " + path)
                     self.handle_dll_local(path, b)
         self.results()
 
@@ -69,21 +74,21 @@ class CustomModule(Module):
             except:
                 pass
 
-            print "[+] Creating: " + path
+            print("[+] Creating: " + path)
             subprocess.check_call(
                 ["powershell", "-C", "mkdir", path, ">", "$null"])
 
-            print "[+] Copying the malicious dll to the path"
+            print("[+] Copying the malicious dll to the path")
             subprocess.check_call(
                 ["powershell", "-C", "cp", self.args["malicious_dll"], path])
 
             prev_pids = psutil.pids()
-            print "[*] Executing the binary"
+            print("[*] Executing the binary")
             subprocess.check_call(["powershell", "-C", binary])
             time.sleep(1)
 
             if self.is_cmd_open(prev_pids):
-                print colored("[*] THIS BINARY IS VULNERABLE TO DLL HIJACKING UAC BYPASS!", 'cyan', attrs=['bold'])
+                print(colored("[*] THIS BINARY IS VULNERABLE TO DLL HIJACKING UAC BYPASS!", 'cyan', attrs=['bold']))
                 if binary not in self._results["vulnerables"]:
                     self._results["vulnerables"].append(binary)
             else:
@@ -94,20 +99,20 @@ class CustomModule(Module):
 
             self.kill(binary, prev_pids, new_pids)
 
-            print "[-] Deleting the path and cleaning up\n"
+            print("[-] Deleting the path and cleaning up\n")
             subprocess.check_call(
                 ["powershell", "-C", "rm", "-r", "-Force", subpath])
 
         except subprocess.CalledProcessError as error:
-            print "ERROR: COPYING THE FILE"
+            print("ERROR: COPYING THE FILE")
 
     def results(self):
-        print "VULNERABLES:"
+        print("VULNERABLES:")
         for r in self._results["vulnerables"]:
-            print r
-        print "\nSOSPECHOSOS:"
+            print(r)
+        print("\nSOSPECHOSOS:")
         for r in self._results["sospechosos"]:
-            print r
+            print(r)
 
     def kill(self, proc, last_pids=None, new_pids=None):
         new_pids = self.last_process_created(last_pids, new_pids)
@@ -115,7 +120,7 @@ class CustomModule(Module):
             for p in new_pids:
                 subprocess.check_call(["taskkill", "/t", "/f", "/pid", str(p)])
         except subprocess.CalledProcessError:
-            print "[!!] The process %s can't be killed" % proc
+            print("[!!] The process %s can't be killed" % proc)
             return
 
     def last_process_created(self, prev_pids, new_pids):
