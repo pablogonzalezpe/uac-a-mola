@@ -99,8 +99,10 @@ class Console::CommandDispatcher::Uacamola
       input = ""
       while true
         input = Readline.readline(prompt, true)
+        break if input.nil?
         split_in = input.split
-        f = split_in.delete(split_in[0])
+        next if split_in.empty?
+        f = split_in.shift
         params = split_in.join(" ")
         function = @functions[f]
         begin
@@ -108,10 +110,14 @@ class Console::CommandDispatcher::Uacamola
             if function[1]
               if split_in.length >= 1
                 send(function[0], params)
+              else
+                puts @red + "Usage: " + @reset + function[3]
               end
             else
-              eval("#{function[0]}")
+              send(function[0])
             end
+          else
+            puts @red + "Unknown command: #{f}" + @reset
           end
         rescue SignalException => e
           if "Operation timed out." == e.message
