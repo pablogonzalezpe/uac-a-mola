@@ -83,23 +83,32 @@ Branch: feat/uacamola3-porting-smoke
 - [x] Scope agreed: start with non-destructive investigative tools first.
 
 ### Pending
-- [ ] Define MCP tool contract v0:
+- [x] Define MCP tool contract v0:
   - `list_modules`
   - `show_module`
   - `set_option`
   - `run_investigate`
   - `parse_procmon_xml`
   - `search_events`
-- [ ] Implement MCP server skeleton (`stdio`) with structured JSON I/O.
-- [ ] Add guardrails:
+- [x] Implement MCP server skeleton (`stdio`) with structured JSON I/O.
+- [x] Add guardrails:
   - deny `attack/*` and `mitigation/*` by default in local mode.
   - explicit allowlist switch for isolated VM mode.
 - [ ] Add Langflow integration profile:
   - tool names
   - tool descriptions
   - expected input schemas
-- [ ] Add audit logging for each MCP tool call.
+- [x] Add audit logging for each MCP tool call.
 - [ ] Add smoke tests for MCP server startup and tool discovery.
+
+### MCP implementation notes (current)
+- [x] Runtime MCP state added (`set_option` / `clear_module_state`).
+- [x] Investigative execution bridge enabled in safe mode for:
+  - `investigate.autoElevate_search`
+- [x] Procmon data tools implemented:
+  - `parse_procmon_xml`
+  - `search_events`
+- [ ] Expand safe execution allowlist after VM validation.
 
 ## Decision log
 - Continue and migrate `uacamola^3` as part of the 2026 roadmap.

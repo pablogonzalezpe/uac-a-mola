@@ -1,17 +1,27 @@
-# uacamola MCP (v0 Skeleton)
+# uacamola MCP (v1 Skeleton)
 
 This folder contains a first MCP skeleton to orchestrate `uacamola` from agents (for example Langflow), with a safe-by-default policy.
 
-## Scope (v0)
+## Scope (v1)
 - Non-destructive investigative tools only.
 - `attack.*` and `mitigation.*` are denied by default.
-- No direct module execution bridge yet (validation-only placeholder).
 
 ## Implemented MCP tools
 - `healthcheck`
 - `list_modules(kind)`
 - `show_module(module_id)`
-- `run_investigate(module_id, options_json)` (placeholder)
+- `set_option(module_id, option_name, option_value)`
+- `clear_module_state(module_id)`
+- `run_investigate(module_id, options_json)`
+- `parse_procmon_xml(xml_path)`
+- `search_events(...)`
+
+## Guardrails
+- Execution allowlist is enabled by default.
+- Current executable allowlist:
+  - `investigate.autoElevate_search`
+- Other modules can be inspected but not executed.
+- Calls are logged in `mcp_uacamola/audit.log`.
 
 ## Run locally
 1. Install dependency:
@@ -20,10 +30,9 @@ This folder contains a first MCP skeleton to orchestrate `uacamola` from agents 
    - `python mcp_uacamola/server.py`
 
 ## Langflow integration idea
-- Add this process as an MCP tool server over stdio.
-- Expose only:
-  - `healthcheck`
-  - `list_modules`
-  - `show_module`
-  - `run_investigate`
-- Keep execution bridge disabled until VM guardrails and audit logs are implemented.
+- Add this process as an MCP server over stdio.
+- Use these tools in your agent chain:
+  - discovery: `healthcheck`, `list_modules`, `show_module`
+  - stateful prep: `set_option`, `clear_module_state`
+  - execution: `run_investigate`
+  - data analysis: `parse_procmon_xml`, `search_events`
