@@ -95,11 +95,12 @@ Branch: feat/uacamola3-porting-smoke
   - deny `attack/*` and `mitigation/*` by default in local mode.
   - explicit allowlist switch for isolated VM mode.
 - [ ] Add Langflow integration profile:
+- [x] Add Langflow integration profile:
   - tool names
   - tool descriptions
   - expected input schemas
 - [x] Add audit logging for each MCP tool call.
-- [ ] Add smoke tests for MCP server startup and tool discovery.
+- [x] Add smoke tests for MCP server startup and tool discovery.
 
 ### MCP implementation notes (current)
 - [x] Runtime MCP state added (`set_option` / `clear_module_state`).
@@ -109,6 +110,7 @@ Branch: feat/uacamola3-porting-smoke
   - `parse_procmon_xml`
   - `search_events`
 - [ ] Expand safe execution allowlist after VM validation.
+- [x] MCP runtime smoke tests added (`tests/test_mcp_server.py`).
 
 ## Decision log
 - Continue and migrate `uacamola^3` as part of the 2026 roadmap.

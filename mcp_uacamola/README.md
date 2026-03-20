@@ -8,6 +8,7 @@ This folder contains a first MCP skeleton to orchestrate `uacamola` from agents 
 
 ## Implemented MCP tools
 - `healthcheck`
+- `tool_contract`
 - `list_modules(kind)`
 - `show_module(module_id)`
 - `set_option(module_id, option_name, option_value)`
@@ -29,10 +30,19 @@ This folder contains a first MCP skeleton to orchestrate `uacamola` from agents 
 2. Run server:
    - `python mcp_uacamola/server.py`
 
+## Smoke test (local)
+- `python -m unittest tests/test_mcp_server.py -v`
+
+## Langflow profile
+- Example profile file:
+  - `mcp_uacamola/langflow_profile.json`
+- It uses `stdio` transport and runs:
+  - `python mcp_uacamola/server.py`
+
 ## Langflow integration idea
 - Add this process as an MCP server over stdio.
 - Use these tools in your agent chain:
-  - discovery: `healthcheck`, `list_modules`, `show_module`
+  - discovery: `healthcheck`, `tool_contract`, `list_modules`, `show_module`
   - stateful prep: `set_option`, `clear_module_state`
   - execution: `run_investigate`
   - data analysis: `parse_procmon_xml`, `search_events`

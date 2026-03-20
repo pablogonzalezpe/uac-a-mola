@@ -1,0 +1,25 @@
+{
+  "name": "uacamola-mcp-safe-profile",
+  "transport": "stdio",
+  "command": "python",
+  "args": [
+    "mcp_uacamola/server.py"
+  ],
+  "working_directory": ".",
+  "description": "Safe-by-default MCP profile for guided uacamola investigations.",
+  "recommended_tools": [
+    "healthcheck",
+    "tool_contract",
+    "list_modules",
+    "show_module",
+    "set_option",
+    "run_investigate",
+    "parse_procmon_xml",
+    "search_events"
+  ],
+  "notes": [
+    "attack.* and mitigation.* execution is blocked in local mode.",
+    "Only allowlisted investigate modules are executable.",
+    "All tool calls are logged in mcp_uacamola/audit.log."
+  ]
+}

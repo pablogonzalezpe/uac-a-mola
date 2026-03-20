@@ -22,9 +22,10 @@ from typing import Any, Dict, List
 try:
     from mcp.server.fastmcp import FastMCP
 except ImportError as exc:  # pragma: no cover
-    raise SystemExit(
-        "Missing dependency 'mcp'. Install with: pip install mcp"
-    ) from exc
+    FastMCP = None  # type: ignore[assignment]
+    _MCP_IMPORT_ERROR = exc
+else:
+    _MCP_IMPORT_ERROR = None
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -36,7 +37,19 @@ RUNTIME_DIR = REPO_ROOT / "mcp_uacamola" / "runtime"
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-mcp = FastMCP("uacamola-mcp")
+if FastMCP is not None:
+    mcp = FastMCP("uacamola-mcp")
+else:
+    class _DummyMCP:
+        def tool(self):
+            return lambda func: func
+
+        def run(self):
+            raise SystemExit(
+                "Missing dependency 'mcp'. Install with: pip install mcp"
+            )
+
+    mcp = _DummyMCP()
 
 MODULE_STATE: Dict[str, Dict[str, Any]] = {}
 SAFE_EXECUTION_ALLOWLIST = {
@@ -64,7 +77,7 @@ def _deny_if_sensitive(module_id: str) -> None:
 def _audit(tool: str, args: Dict[str, Any], status: str, error: str = "") -> None:
     AUDIT_LOG.parent.mkdir(parents=True, exist_ok=True)
     line = {
-        "ts": dt.datetime.utcnow().isoformat() + "Z",
+        "ts": dt.datetime.now(dt.UTC).isoformat().replace("+00:00", "Z"),
         "tool": tool,
         "status": status,
         "args": args,
@@ -377,6 +390,32 @@ def healthcheck() -> Dict[str, Any]:
     }
     _audit("healthcheck", {}, "ok")
     return data
+
+
+@mcp.tool()
+def tool_contract() -> Dict[str, Any]:
+    """Return a compact MCP contract intended for agent/tool orchestration layers."""
+    contract = {
+        "name": "uacamola-mcp",
+        "mode": "safe-default",
+        "blocked_prefixes": ["attack.", "mitigation."],
+        "execution_allowlist": sorted(SAFE_EXECUTION_ALLOWLIST),
+        "tools": [
+            {"name": "healthcheck", "intent": "server health and paths"},
+            {"name": "list_modules", "intent": "discover available modules"},
+            {"name": "show_module", "intent": "inspect metadata/options"},
+            {"name": "set_option", "intent": "set runtime option for module"},
+            {"name": "clear_module_state", "intent": "clear runtime option cache"},
+            {
+                "name": "run_investigate",
+                "intent": "execute allowlisted investigate modules in guarded mode",
+            },
+            {"name": "parse_procmon_xml", "intent": "aggregate counts from procmon xml"},
+            {"name": "search_events", "intent": "filter procmon events with constraints"},
+        ],
+    }
+    _audit("tool_contract", {}, "ok")
+    return contract
 
 
 if __name__ == "__main__":
